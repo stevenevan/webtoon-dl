@@ -18,6 +18,7 @@ import os
 import re
 from requests_html import HTMLSession
 import zipfile
+from typing import List
 
 SESSION = HTMLSession()
 # bypass age confirmation page
@@ -28,14 +29,14 @@ AGE_COOKIE = {
 }
 
 
-def get_episodes_from_list(list_url: str) -> list[str]:
+def get_episodes_from_list(list_url: str) -> List[str]:
     """Get episode URLs from a episode list URL
 
     Args:
         list_url (str): URL to webtoons episode list
 
     Returns:
-        list[str]: Episode URLs
+        List[str]: Episode URLs
     """
 
     # Has to be this ugly as webtoon doesn't 404 when overpaginating... (._.)
@@ -73,14 +74,14 @@ def get_episodes_from_list(list_url: str) -> list[str]:
     return list(episode_urls)
 
 
-def get_episodes(urls: list[str]) -> list[dict]:
+def get_episodes(urls: List[str]) -> List[dict]:
     """Organize webtoons URLs into dictionary and expand any links to episodes
 
     Args:
-        urls (list[str]): URLs to comic title or episode pages
+        urls (List[str]): URLs to comic title or episode pages
 
     Returns:
-        list[dict]: Comic episodes (url, title and episode no/name)
+        List[dict]: Comic episodes (url, title and episode no/name)
                     [{'url': str, 'title': str, 'no': int, 'name': str}, ...]
     """
 
@@ -111,7 +112,7 @@ def get_episodes(urls: list[str]) -> list[dict]:
     return episodes
 
 
-def get_image_urls(episode: dict) -> list[str]:
+def get_image_urls(episode: dict) -> List[str]:
     """Get direct image links to all page images of episode
 
     Args:
@@ -119,7 +120,7 @@ def get_image_urls(episode: dict) -> list[str]:
                         {'url': str, 'title': str, 'no': int, 'name': str}
 
     Returns:
-        list[str]: List of page image URLs
+        List[str]: List of page image URLs
     """
 
     r = SESSION.get(episode['url'], cookies=AGE_COOKIE)
@@ -133,7 +134,7 @@ def get_image_urls(episode: dict) -> list[str]:
     return (image_urls)
 
 
-def get_episode_images(episode: dict) -> list[bytes]:
+def get_episode_images(episode: dict) -> List[bytes]:
     """Get image files (pages) of an episode
 
     Args:
@@ -141,7 +142,7 @@ def get_episode_images(episode: dict) -> list[bytes]:
                         {'url': str, 'title': str, 'no': int, 'name': str}
 
     Returns:
-        list[bytes]: Episode's page images (jpg binary data)
+        List[bytes]: Episode's page images (jpg binary data)
     """
 
     images = []
