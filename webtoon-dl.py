@@ -20,6 +20,8 @@ from requests_html import HTMLSession
 import zipfile
 from typing import List
 from urllib.parse import urljoin, urlparse
+import numpy as np
+import threading
 
 SESSION = HTMLSession()
 # bypass age confirmation page
@@ -151,7 +153,7 @@ def get_episode_images(episode: dict) -> List[bytes]:
 
     total_pages = len(image_urls)
     
-    if total_pages === 0:
+    if total_pages == 0:
         raise Exception("There is no images found in this episode")
 
     for index, image_url in enumerate(image_urls):
@@ -192,6 +194,10 @@ parser.add_argument("-s", "--start",
 parser.add_argument("-e", "--end",
                     help="Specify episode number which should be downloaded last.",
                     type=int)
+parser.add_argument("-t", "--threads",
+                    help="Specify how many threads to be executed (>1 = multithreading)",
+                    type=int,
+                    default=1)
 
 args = parser.parse_args()
 
@@ -202,6 +208,7 @@ print(f"✔️ Found {len(episodes)} episodes!\n")
 
 # Save each comic
 episodes.sort(key=lambda episode: (episode['title'], episode['no']))
+valid_episodes = []
 for episode in episodes:
     # Check if episode should not be downloaded and skip
     if (args.start is not None and episode['no'] < args.start) \
@@ -209,29 +216,49 @@ for episode in episodes:
         print(f"ℹ️ Skipping {episode['title']} #{episode['no']}: "
               f"{episode['name']}.\n")
         continue
+    valid_episodes.append(episode)
 
-    episode_images = get_episode_images(episode)
-    print(f"💾 Saving episode...\n")
 
-    # Create title output directory
-    outpath = f"{args.output}/{episode['title']}"
-    os.makedirs(outpath, exist_ok=True)
+def download_the_episode(*episodes: List[dict]):
+    for episode in episodes:
+      episode_images = get_episode_images(episode)
+      print(f"💾 Saving episode...\n")
 
-    # Check for number argument
-    numbering = f"#{episode['no']:03}_" if args.number else ""
-    outpath += f"/{episode['title']}_{numbering}{episode['name']}"
+      # Create title output directory
+      outpath = f"{args.output}/{episode['title']}"
+      os.makedirs(outpath, exist_ok=True)
 
-    # Raw mode, save images into folder
-    if args.raw:
-        os.makedirs(outpath, exist_ok=True)
-        for index, image in enumerate(episode_images):
-            with open(f"{outpath}/{index:02}.jpg", 'wb') as f:
-                f.write(image)
+      # Check for number argument
+      numbering = f"#{episode['no']:03}_" if args.number else ""
+      outpath += f"/{episode['title']}_{numbering}{episode['name']}"
 
-    # CBZ mode, save images into zip file
-    else:
-        with zipfile.ZipFile(f"{outpath}.cbz", 'w') as zip:
+      # Raw mode, save images into folder
+      if args.raw:
+            os.makedirs(outpath, exist_ok=True)
             for index, image in enumerate(episode_images):
-                zip.writestr(f"{index:02}.jpg", image)
+                  with open(f"{outpath}/{index:02}.jpg", 'wb') as f:
+                        f.write(image)
 
+      # CBZ mode, save images into zip file
+      else:
+            with zipfile.ZipFile(f"{outpath}.cbz", 'w') as zip:
+                  for index, image in enumerate(episode_images):
+                        zip.writestr(f"{index:02}.jpg", image)
+
+n_threads = args.threads
+
+if n_threads < 1:
+      raise Exception('Invalid thread arguments. Minimum one thread.')
+else:
+      # Splitting the items into chunks equal to number of threads
+      valid_episodes_chunk = np.array_split(valid_episodes, n_threads)
+
+      thread_list = []
+      for thr in range(n_threads):
+            thread = threading.Thread(target=download_the_episode, args=(valid_episodes_chunk[thr]))
+            thread_list.append(thread)
+            thread_list[thr].start()
+
+      for thread in thread_list:
+            thread.join()
 print("🎉 DONE! All episodes downloaded.")

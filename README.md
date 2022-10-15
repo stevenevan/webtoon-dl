@@ -1,20 +1,18 @@
-Webtoon-dl.py
-=============
+# Webtoon-dl.py
 
 Comic downloader/scraper for http://www.webtoons.com. Download individual episodes or entire comics.
 Output as CBZ archives or as sets of folders containing numbered images.
 
-Requirements
-------------
+## Requirements
 
- * `>=Python3.6`
- * [requests_html](https://github.com/kennethreitz/requests-html) (`pip3 install requests_html`)
+- `>=Python3.6`
+- [requests_html](https://github.com/kennethreitz/requests-html) (`pip3 install requests_html`)
+- numpy (`pip3 install numpy`)
 
-Usage
------
+## Usage
 
 ```
-usage: webtoon-dl.py [-h] [-r] [-o OUTPUT] [-n] [-s START] [-e END] webtoon_url [webtoon_url ...]
+usage: webtoon-dl.py [-h] [-r] [-o OUTPUT] [-n] [-s START] [-e END] [-t THREAD] webtoon_url [webtoon_url ...]
 
 Webtoons.com comic downloader
 Saves comics as CBZ archives or folders of images.
@@ -33,4 +31,6 @@ options:
   -s START, --start START
                         Specify episode number from which download should start.
   -e END, --end END     Specify episode number which should be downloaded last.
+  -t THREADS, --threads THREADS
+                        Specify how many threads to be executed (>1 = multithreading)
 ```
