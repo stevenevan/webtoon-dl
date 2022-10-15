@@ -1,7 +1,9 @@
-# Webtoon-dl.py
+# Webtoon Scraper
 
 Comic downloader/scraper for http://www.webtoons.com. Download individual episodes or entire comics.
 Output as CBZ archives or as sets of folders containing numbered images.
+
+> Doesn't support animated webtoons, such as Shrieks because it has different structure and many noise images.
 
 ## Requirements
 
