@@ -229,8 +229,10 @@ def download_the_episode(*episodes: List[dict]):
       os.makedirs(outpath, exist_ok=True)
 
       # Check for number argument
-      numbering = f"#{episode['no']:03}_" if args.number else ""
-      outpath += f"/{episode['title']}_{numbering}{episode['name']}"
+      is_length_valid = len(episode['name']) < 128
+      name = episode['name'] if is_length_valid else ""
+      numbering = f"#{episode['no']:03}_" if args.number or not is_length_valid else ""
+      outpath += f"/{episode['title']}_{numbering}{name}"
 
       # Raw mode, save images into folder
       if args.raw:
