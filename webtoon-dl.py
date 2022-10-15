@@ -19,6 +19,7 @@ import re
 from requests_html import HTMLSession
 import zipfile
 from typing import List
+from urllib.parse import urljoin, urlparse
 
 SESSION = HTMLSession()
 # bypass age confirmation page
@@ -152,7 +153,7 @@ def get_episode_images(episode: dict) -> List[bytes]:
     for index, image_url in enumerate(image_urls):
         print(f"\tDownloading page {index+1}/{total_pages}.")
         # to download good-quality images
-        image_url = image_url.replace('?type=q90', '')
+        image_url = urljoin(image_url, urlparse(image_url).path)
         r = SESSION.get(image_url, headers={'referer': episode['url']})
 
         if r:
