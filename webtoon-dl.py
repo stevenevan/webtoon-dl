@@ -150,6 +150,10 @@ def get_episode_images(episode: dict) -> List[bytes]:
     image_urls = get_image_urls(episode)
 
     total_pages = len(image_urls)
+    
+    if total_pages === 0:
+        raise Exception("There is no images found in this episode")
+
     for index, image_url in enumerate(image_urls):
         print(f"\tDownloading page {index+1}/{total_pages}.")
         # to download good-quality images
